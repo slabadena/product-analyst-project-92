@@ -1,0 +1,2 @@
+### Hexlet tests and linter status:
+[![Actions Status](https://github.com/slabadena/product-analyst-project-92/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/slabadena/product-analyst-project-92/actions)

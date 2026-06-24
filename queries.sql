@@ -66,3 +66,28 @@ select
 from avg_income_data
 where avg_income_per_deal < avg_total_income
 order by avg_income_per_deal asc
+
+-- Step 5.3
+with
+sales_data as (
+	select
+		sales_person_id,
+		concat(e.first_name, ' ', e.last_name) as seller,
+		s.product_id,
+		p.price,
+		SUM(quantity) as product_quantity,
+		COUNT(quantity) as product_sales_count,
+		LOWER(TO_CHAR(s.sale_date, 'FMDay')) as day_of_week,
+		EXTRACT(ISODOW from s.sale_date) as day_number
+	from sales s
+	inner join products p on p.product_id = s.product_id 
+	inner join employees e on s.sales_person_id = e.employee_id 
+	group by s.sales_person_id, seller, s.product_id, p.price, s.sale_date 
+)
+
+select
+	seller,
+	day_of_week,
+	SUM(price * product_quantity) OVER (PARTITION BY seller, day_of_week) AS income
+from sales_data
+order by day_number, seller

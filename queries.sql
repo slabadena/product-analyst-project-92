@@ -83,18 +83,19 @@ sales_data as (
 		s.product_id,
 		p.price,
 		SUM(quantity) as product_quantity,
-		COUNT(quantity) as product_sales_count,
-		LOWER(TO_CHAR(s.sale_date, 'FMDay')) as day_of_week,
-		EXTRACT(ISODOW from s.sale_date) as day_number
+		FLOOR(p.price * quantity) as income,
+		s.sale_date
 	from sales s
 	inner join products p on p.product_id = s.product_id 
 	inner join employees e on s.sales_person_id = e.employee_id 
-	group by s.sales_person_id, seller, s.product_id, p.price, s.sale_date 
+	group by s.sale_date, sales_person_id, seller, s.product_id, p.price, quantity
 )
 
 select
 	seller,
-	day_of_week,
-	SUM(price * product_quantity) OVER (PARTITION BY seller, day_of_week) AS income
+	sale_date,
+	LOWER(TO_CHAR(sale_date, 'FMDay')) as day_of_week,
+	SUM(income) as income
 from sales_data
-order by day_number, seller
+group by sale_date, seller
+order by sale_date, seller

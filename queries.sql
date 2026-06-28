@@ -2,7 +2,7 @@
 select count(1) as customers_count
 from customers;
 
--- Step 5.1
+-- Step 6.1
 with sales_data as (
 	select
 		sales_person_id,
@@ -26,7 +26,7 @@ group by seller
 order by income desc
 offset 0 limit 10
 
--- Step 5.2
+-- Step 6.2
 with 
 sales_data as (
 	select
@@ -45,29 +45,36 @@ income_data as (
 	select 
 		seller,
 		SUM(product_sales_count) as operations,
-		FLOOR(SUM(product_quantity * price)) as income,
-		FLOOR(AVG(product_quantity * price)) as avg_income_per_deal
+		FLOOR(SUM(product_quantity * price)) as income
 	from sales_data
 	group by seller
 	order by income desc
 ),
-avg_income_data as (
-	select 
+income_avg_data as (
+	select
 		seller,
 		income,
-		avg_income_per_deal,
-		FLOOR(AVG(income) over () ) as avg_total_income
+		operations,
+		FLOOR(AVG(income / operations)) as average_income
 	from income_data
+	group by seller, income, operations
+),
+income_avg_total_data as (
+	select 
+		seller,
+		average_income,
+		FLOOR(AVG(income / operations) over () ) as avg_total_income
+	from income_avg_data
 )
 
 select 
 	seller,
-	avg_income_per_deal as average_income
-from avg_income_data
-where avg_income_per_deal < avg_total_income
-order by avg_income_per_deal asc
+	average_income
+from income_avg_total_data
+where average_income < avg_total_income
+order by average_income asc
 
--- Step 5.3
+-- Step 6.3
 with
 sales_data as (
 	select

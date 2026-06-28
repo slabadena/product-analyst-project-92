@@ -75,27 +75,32 @@ where average_income < avg_total_income
 order by average_income asc
 
 -- Step 6.3
-with
-sales_data as (
-	select
-		sales_person_id,
-		concat(e.first_name, ' ', e.last_name) as seller,
-		s.product_id,
-		p.price,
-		SUM(quantity) as product_quantity,
-		FLOOR(p.price * quantity) as income,
-		s.sale_date
-	from sales s
-	inner join products p on p.product_id = s.product_id 
-	inner join employees e on s.sales_person_id = e.employee_id 
-	group by s.sale_date, sales_person_id, seller, s.product_id, p.price, quantity
+WITH sales_data AS (
+    SELECT
+        s.sales_person_id,
+        CONCAT(e.first_name, ' ', e.last_name) AS seller,
+        s.product_id,
+        p.price,
+        s.quantity,
+        s.sale_date,
+        EXTRACT(ISODOW FROM s.sale_date) AS day_of_week_number,
+        LOWER(TO_CHAR(s.sale_date, 'FMDay')) AS day_of_week
+    FROM sales s
+    INNER JOIN products p
+        ON p.product_id = s.product_id
+    INNER JOIN employees e
+        ON s.sales_person_id = e.employee_id
 )
 
-select
-	seller,
-	sale_date,
-	LOWER(TO_CHAR(sale_date, 'FMDay')) as day_of_week,
-	SUM(income) as income
-from sales_data
-group by sale_date, seller
-order by sale_date, seller
+SELECT
+    seller,
+    day_of_week,
+    FLOOR(SUM(price * quantity)) AS income
+FROM sales_data
+GROUP BY
+    seller,
+    day_of_week_number,
+    day_of_week
+ORDER BY
+    day_of_week_number ASC,
+    seller ASC;

@@ -126,3 +126,30 @@ ORDER BY
         WHEN age_category = '26-40' THEN 2
         ELSE 3
     END;
+
+-- Step 7.2
+WITH sales_data AS (
+    select
+    	s.customer_id,
+        s.product_id,
+        p.price,
+        SUM(s.quantity) as quantity,
+        TO_CHAR(sale_date, 'YYYY-MM') AS selling_month
+    FROM sales s
+    INNER JOIN products p
+        ON p.product_id = s.product_id
+    INNER JOIN customers c
+        ON c.customer_id = s.customer_id
+    group by selling_month, s.product_id, p.price, s.customer_id
+    order by selling_month asc
+),
+income_data as (
+	select
+		selling_month,
+		COUNT(customer_id) as total_customers,
+		SUM(price * quantity) as income
+	from sales_data
+	group by selling_month
+)
+
+select * from income_data

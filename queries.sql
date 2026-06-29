@@ -106,27 +106,23 @@ ORDER BY
     seller ASC;
 
 -- Step 7.1
-WITH sales_data AS (
+WITH age_data AS (
     SELECT
-        c.age,
         CASE
-		  WHEN c.age BETWEEN 16 AND 25 THEN '16-25'
-          WHEN c.age BETWEEN 26 AND 40 THEN '26-40'
-        ELSE '40+'
-		END AS age_category
-    FROM sales s
-    INNER JOIN customers c
-        ON c.customer_id = s.customer_id
+            WHEN age BETWEEN 16 AND 25 THEN '16-25'
+            WHEN age BETWEEN 26 AND 40 THEN '26-40'
+            ELSE '40+'
+        END AS age_category
+    FROM customers
 )
-
 SELECT
     age_category,
-    COUNT(age) AS age_count
-FROM sales_data
+    COUNT(*) AS age_count
+FROM age_data
 GROUP BY age_category
 ORDER BY
     CASE
         WHEN age_category = '16-25' THEN 1
         WHEN age_category = '26-40' THEN 2
-        WHEN age_category = '40+' THEN 3
+        ELSE 3
     END;

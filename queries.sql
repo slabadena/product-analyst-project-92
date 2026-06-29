@@ -104,3 +104,29 @@ GROUP BY
 ORDER BY
     day_of_week_number ASC,
     seller ASC;
+
+-- Step 7.1
+WITH sales_data AS (
+    SELECT
+        c.age,
+        CASE
+		  WHEN c.age BETWEEN 16 AND 25 THEN '16-25'
+          WHEN c.age BETWEEN 26 AND 40 THEN '26-40'
+        ELSE '40+'
+		END AS age_category
+    FROM sales s
+    INNER JOIN customers c
+        ON c.customer_id = s.customer_id
+)
+
+SELECT
+    age_category,
+    COUNT(age) AS age_count
+FROM sales_data
+GROUP BY age_category
+ORDER BY
+    CASE
+        WHEN age_category = '16-25' THEN 1
+        WHEN age_category = '26-40' THEN 2
+        WHEN age_category = '40+' THEN 3
+    END;

@@ -146,7 +146,7 @@ WITH sales_data AS (
 income_data as (
 	select
 		selling_month,
-		COUNT(customer_id) as total_customers,
+		COUNT(distinct customer_id) as total_customers,
 		FLOOR(SUM(price * quantity)) as income
 	from sales_data
 	group by selling_month

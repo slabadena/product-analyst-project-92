@@ -153,3 +153,41 @@ income_data as (
 )
 
 select * from income_data
+
+-- Step 7.3
+WITH sales_data AS (
+    select
+    	s.customer_id,
+    	concat(c.first_name, ' ', c.last_name) as customer,
+    	concat(e.first_name, ' ', e.last_name) as seller,
+        p.price,
+        s.sale_date,
+        MIN(s.sale_date) over () AS first_purchase_date
+    FROM sales s
+    INNER JOIN products p
+        ON p.product_id = s.product_id
+    INNER JOIN customers c
+        ON c.customer_id = s.customer_id
+    INNER JOIN employees e
+        ON e.employee_id = s.sales_person_id
+    group by s.customer_id, customer, seller, p.price, s.sale_date
+    order by s.customer_id
+),
+filtered_data as (
+	select
+		customer_id,
+		customer,
+		seller,
+		price,
+		sale_date,
+		first_purchase_date
+	from sales_data
+	where sale_date = first_purchase_date and price = 0
+)
+
+select 
+	customer,
+	sale_date,
+	seller
+from filtered_data
+order by customer_id
